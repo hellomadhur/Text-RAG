@@ -82,8 +82,13 @@ def load_documents(path_or_dir: str, recursive: bool = True) -> List[Dict]:
     for f in p.rglob("*") if recursive else p.iterdir():
         if f.is_dir():
             continue
-        # skip very large binary files heuristically by extension
-        if f.suffix.lower() in {".exe", ".bin", ".dll"}:
+        # skip binary / non-text files by extension
+        skip_suffixes = {
+            ".exe", ".bin", ".dll",
+            ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".ico", ".tiff", ".tif",
+            ".svg", ".heic", ".avif",
+        }
+        if f.suffix.lower() in skip_suffixes:
             continue
         try:
             docs.append(load_file(str(f)))
