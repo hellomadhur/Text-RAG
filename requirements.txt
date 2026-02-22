@@ -1,8 +1,9 @@
-langchain
-langchain-text-splitters
-langchain-community
-langchain-core
-langchain-openai
+# Pin LangChain to 0.3.x so langchain.chains (RetrievalQA) is available in Docker
+langchain>=0.3.27,<0.4
+langchain-text-splitters>=0.3
+langchain-community>=0.3
+langchain-core>=0.3
+langchain-openai>=0.3
 openai
 chromadb
 langchain-chroma
