@@ -63,8 +63,11 @@ uvicorn rag_app.app:app --reload --host 127.0.0.1 --port 8000
 ```
 
 - **GET /** — health check  
-- **POST /query?q=...** — run the RAG query  
+- **GET /query-page** — HTML UI to query the RAG (ask questions and see answers + sources)  
+- **GET /query?q=...** or **POST /query?q=...** — run the RAG query (both methods supported)  
 - **GET /docs** — Swagger UI  
+
+**Query from the browser:** Open **http://127.0.0.1:8000/query-page** to use the built-in query page. You can also call the API directly, e.g. `curl "http://127.0.0.1:8000/query?q=your%20question"`.
 
 Ensure the index has been built and provider env vars are set, or the service returns 503.
 
