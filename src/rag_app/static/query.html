@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text-RAG Query</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 720px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      color: #1a1a1a;
+      background: #f8f9fa;
+    }
+    h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+    form { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    input[type="text"] {
+      flex: 1;
+      padding: 0.6rem 0.75rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      background: #0d6efd;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover { background: #0b5ed7; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .answer {
+      background: white;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+      margin-bottom: 1rem;
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
+    .sources {
+      background: white;
+      padding: 1rem 1.25rem;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+    .sources h3 { margin: 0 0 0.5rem 0; font-size: 0.95rem; }
+    .source-item {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #eee;
+      font-size: 0.9rem;
+    }
+    .source-item:last-child { border-bottom: none; }
+    .source-item strong { color: #495057; }
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+    }
+    .loading { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Text-RAG Query</h1>
+  <p class="subtitle">Ask a question against your indexed documents.</p>
+  <form id="query-form">
+    <input type="text" id="q" name="q" placeholder="e.g. What are connectors?" autofocus>
+    <button type="submit" id="submit-btn">Ask</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('query-form');
+    const input = document.getElementById('q');
+    const submitBtn = document.getElementById('submit-btn');
+    const resultEl = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const q = (input.value || '').trim();
+      if (!q) return;
+      submitBtn.disabled = true;
+      resultEl.innerHTML = '<p class="loading">Searching…</p>';
+      try {
+        const res = await fetch('/query?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        if (!res.ok) {
+          resultEl.innerHTML = '<div class="error">' + (data.detail || res.statusText) + '</div>';
+          return;
+        }
+        let html = '<div class="answer">' + escapeHtml(data.answer || '') + '</div>';
+        if (data.sources && data.sources.length) {
+          html += '<div class="sources"><h3>Sources</h3>';
+          data.sources.forEach(s => {
+            html += '<div class="source-item"><strong>' + escapeHtml(s.source || '') + '</strong>' +
+              (s.chunk != null ? ' (chunk ' + s.chunk + ')' : '') + '</div>';
+          });
+          html += '</div>';
+        }
+        resultEl.innerHTML = html;
+      } catch (err) {
+        resultEl.innerHTML = '<div class="error">Request failed: ' + escapeHtml(err.message) + '</div>';
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+
+    function escapeHtml(s) {
+      const div = document.createElement('div');
+      div.textContent = s;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>
