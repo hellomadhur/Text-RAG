@@ -1,7 +1,16 @@
-from fastapi import FastAPI, HTTPException
+import warnings
+
+# Suppress urllib3 LibreSSL/OpenSSL warning on macOS (must be before any import that loads urllib3)
+warnings.filterwarnings("ignore", message=".*OpenSSL.*")
+warnings.filterwarnings("ignore", message=".*LibreSSL.*")
+
 import os
+from fastapi import FastAPI, HTTPException
+from dotenv import load_dotenv
 
 from .chain import build_retriever_and_chain, answer_query
+
+load_dotenv()
 
 app = FastAPI(title="Text RAG Service")
 
@@ -26,10 +35,14 @@ def startup_event():
 async def query(q: str):
     """Run the RAG QA chain against the indexed store.
 
-    Ensure you have indexed documents (run the indexer) and set `OPENAI_API_KEY`.
+    Ensure you have indexed documents (run the indexer) and set the required API keys
+    for your chosen EMBEDDING_PROVIDER / LLM_PROVIDER (see .env.example).
     """
     qa_chain = getattr(app.state, "qa_chain", None)
     if qa_chain is None:
-        raise HTTPException(status_code=503, detail="QA chain not initialized. Build the index and set OPENAI_API_KEY.")
+        raise HTTPException(
+            status_code=503,
+            detail="QA chain not initialized. Build the index and set the provider env vars (see .env.example).",
+        )
     res = answer_query(qa_chain, q)
     return res

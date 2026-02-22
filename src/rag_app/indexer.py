@@ -1,6 +1,13 @@
+import warnings
+
+# Suppress urllib3 LibreSSL/OpenSSL warning on macOS (must be before any import that loads urllib3)
+warnings.filterwarnings("ignore", message=".*OpenSSL.*")
+warnings.filterwarnings("ignore", message=".*LibreSSL.*")
+
 from typing import List
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from .ingest import load_documents
@@ -36,8 +43,8 @@ def index_directory(source_dir: str, persist_dir: str = None, chunk_size: int = 
     split_texts, metadatas = deduplicate_texts(split_texts, metadatas)
 
     # build/store in Chroma using embedding function (Chroma will call it)
-    from langchain_openai import OpenAIEmbeddings
-    emb_client = OpenAIEmbeddings()
+    from .providers import get_embedding_client
+    emb_client = get_embedding_client()
     vs = VectorStore(embedding_client=emb_client, persist_dir=persist_dir)
     docs_to_add = [{"text": t, **m} for t, m in zip(split_texts, metadatas)]
     vs.from_documents(docs_to_add)
@@ -49,6 +56,7 @@ def index_directory(source_dir: str, persist_dir: str = None, chunk_size: int = 
 if __name__ == "__main__":
     import argparse
 
+    load_dotenv()
     p = argparse.ArgumentParser()
     p.add_argument("source_dir", help="Directory to index")
     p.add_argument("--persist_dir", default=None)
