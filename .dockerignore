@@ -1,0 +1,31 @@
+# Don't bake secrets or local data into the image
+.env
+.env.*
+!.env.example
+
+# Virtual env and local Python cache (image has its own deps)
+.venv
+venv
+__pycache__
+*.pyc
+.pytest_cache
+.mypy_cache
+*.egg-info
+
+# Git and IDE
+.git
+.gitignore
+.cursorignore
+
+# Chroma DB and local data (mount at runtime instead)
+.chromadb
+
+# Docs and tooling not needed in the container
+README.md
+linkedin-post.md
+.github
+scripts
+
+# Optional: uncomment if you have large doc folders in the repo
+# documents
+# data

@@ -134,6 +134,38 @@ docker build -t text-rag .
 docker run -p 8000:8000 --env-file .env text-rag
 ```
 
+**Indexing with Docker**
+
+You must index your documents before the API can answer queries. Use the same image with a one-off command that runs the indexer instead of the server. Mount your documents directory and a directory for the Chroma DB (so the API container can use the same index later).
+
+Replace `/path/to/your/documents` with the path to the folder containing your PDFs, text files, etc. Replace `hellomadhur/text-rag:latest` with `text-rag` if you built the image locally.
+
+- **With OpenAI (or other cloud providers):**
+  ```bash
+  docker run --rm --env-file .env \
+    -v "/path/to/your/documents:/data/documents:ro" \
+    -v "$(pwd)/.chromadb:/data/chroma" \
+    hellomadhur/text-rag:latest \
+    python -m src.rag_app.indexer /data/documents --persist_dir /data/chroma
+  ```
+
+- **With Ollama:** Run Ollama on your host, then add `-e OLLAMA_HOST=http://host.docker.internal:11434`:
+  ```bash
+  docker run --rm --env-file .env -e OLLAMA_HOST=http://host.docker.internal:11434 \
+    -v "/path/to/your/documents:/data/documents:ro" \
+    -v "$(pwd)/.chromadb:/data/chroma" \
+    hellomadhur/text-rag:latest \
+    python -m src.rag_app.indexer /data/documents --persist_dir /data/chroma
+  ```
+
+When you start the API container, mount the same Chroma directory and set `CHROMA_PERSIST_DIR` so it uses this index:
+  ```bash
+  docker run -p 8000:8000 --env-file .env \
+    -v "$(pwd)/.chromadb:/data/chroma" -e CHROMA_PERSIST_DIR=/data/chroma \
+    hellomadhur/text-rag:latest
+  ```
+  (Add `-e OLLAMA_HOST=http://host.docker.internal:11434` if using Ollama.)
+
 Or pass variables explicitly:
 
 ```bash
