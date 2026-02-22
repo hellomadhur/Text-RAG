@@ -1,21 +1,11 @@
 from typing import List
-import os
 
-from langchain_openai import OpenAIEmbeddings
-
-
-# Instantiate a LangChain embeddings client. It will read OPENAI_API_KEY from
-# the environment (or you may pass it explicitly when needed).
-_emb = OpenAIEmbeddings()
+from .providers import get_embedding_client
 
 
 def get_embeddings(texts: List[str]) -> List[List[float]]:
-    """Return embeddings for a list of texts using OpenAIEmbeddings.
+    """Return embeddings for a list of texts using the configured provider.
 
-    Args:
-        texts: list of strings to embed
-
-    Returns:
-        List of embedding vectors (lists of floats).
+    Set EMBEDDING_PROVIDER to openai, huggingface, or ollama (see .env.example).
     """
-    return _emb.embed_documents(texts)
+    return get_embedding_client().embed_documents(texts)

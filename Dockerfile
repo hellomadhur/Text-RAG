@@ -1,3 +1,4 @@
+# Text-RAG API server. Set EMBEDDING_PROVIDER, LLM_PROVIDER, and API keys via env (e.g. --env-file .env).
 FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt /app/

@@ -1,17 +1,17 @@
 from typing import List, Dict, Tuple, Optional
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
 
 from .vectorstore import VectorStore
 from .prompts import DEFAULT_QA_PROMPT
+from .providers import get_embedding_client, get_llm
 
 
 def build_retriever_and_chain(
     persist_dir: Optional[str] = None,
     collection_name: str = "default",
     k: int = 4,
-    llm_model: str = "gpt-3.5-turbo",
+    llm_model: Optional[str] = None,
     prompt: Optional[PromptTemplate] = None,
 ) -> Tuple[object, object]:
     """Build and return a (retriever, qa_chain) tuple.
@@ -20,17 +20,17 @@ def build_retriever_and_chain(
         persist_dir: optional Chroma persist directory
         collection_name: collection within Chroma
         k: number of documents to retrieve
-        llm_model: name of the OpenAI chat model
+        llm_model: optional model name (defaults per provider: gpt-3.5-turbo / llama2)
         prompt: optional PromptTemplate to use for the QA chain
 
     Returns:
         (retriever, qa_chain)
     """
-    emb = OpenAIEmbeddings()
+    emb = get_embedding_client()
     vs = VectorStore(embedding_client=emb, persist_dir=persist_dir)
     retriever = vs.get_retriever(collection_name=collection_name, k=k)
 
-    llm = ChatOpenAI(model_name=llm_model, temperature=0.0)
+    llm = get_llm(model_name=llm_model, temperature=0.0)
     prompt_to_use = prompt or DEFAULT_QA_PROMPT
 
     qa_chain = RetrievalQA.from_chain_type(
@@ -50,7 +50,7 @@ def answer_query(qa_chain, query: str) -> Dict:
     Returns the raw chain output which usually contains 'result'/'answer' and
     'source_documents'.
     """
-    res = qa_chain(query)
+    res = qa_chain.invoke({"query": query})
 
     # Normalize the answer text
     answer_text = None

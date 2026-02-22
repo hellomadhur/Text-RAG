@@ -5,6 +5,10 @@ langchain-core
 langchain-openai
 openai
 chromadb
+langchain-chroma
+langchain-ollama
+langchain-huggingface
+sentence-transformers
 faiss-cpu
 python-dotenv
 fastapi
