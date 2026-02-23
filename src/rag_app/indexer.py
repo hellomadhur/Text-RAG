@@ -88,5 +88,7 @@ if __name__ == "__main__":
     p.add_argument("-v", "--verbose", action="store_true", help="Show debug logs (e.g. per-file names)")
     args = p.parse_args()
     if args.verbose:
+        # Root logger must be DEBUG too, else propagated debug messages are filtered at the root.
+        logging.getLogger().setLevel(logging.DEBUG)
         logging.getLogger(__name__).setLevel(logging.DEBUG)
     index_directory(args.source_dir, persist_dir=args.persist_dir)
