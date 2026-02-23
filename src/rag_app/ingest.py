@@ -82,11 +82,12 @@ def load_documents(path_or_dir: str, recursive: bool = True) -> List[Dict]:
     for f in p.rglob("*") if recursive else p.iterdir():
         if f.is_dir():
             continue
-        # skip binary / non-text files by extension
+        # skip binary / non-text files by extension (no parser yet)
         skip_suffixes = {
             ".exe", ".bin", ".dll",
             ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".ico", ".tiff", ".tif",
             ".svg", ".heic", ".avif",
+            ".pptx", ".ppt", ".xlsx", ".xls", ".odp", ".ods",
         }
         if f.suffix.lower() in skip_suffixes:
             continue

@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Create and activate a virtual environment, then install requirements
-PYTHON=${PYTHON:-python3}
+# Create and activate a virtual environment, then install requirements.
+# Default to Python 3.12 for Chroma/LangChain compatibility; override with PYTHON=... if needed.
+PYTHON=${PYTHON:-python3.12}
 VENV_DIR=.venv
 
 echo "Creating virtual environment in $VENV_DIR..."
